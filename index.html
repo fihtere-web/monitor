@@ -104,15 +104,15 @@ const COLLEGES=[
     {name:"09.02.06 Сетевое и системное администрирование",label:"Сетевое",code:"09.02.06",budget:20,color:"#34C98A"},
     {name:"09.02.11 Разработка и управление ПО",label:"Разработка ПО",code:"09.02.11",budget:20,color:"#4F8EF7"},
   ]},
-  {name:"КИТиС",short:"КИТиС",site:"kitis.ru",vuz:null,
-   specialties:[
-    {name:"09.02.06 Сетевое и системное администрирование",label:"Сетевое",code:"09.02.06",budget:50,color:"#34C98A"},
-    {name:"08.02.01 Строительство и эксплуатация зданий",label:"Строительство",code:"08.02.01",budget:50,color:"#F5A623"},
-  ]},
   {name:"Колледж при БФУ им. И. Канта",short:"БФУ",site:"kantiana.ru",vuz:"при БФУ",
    specialties:[
     {name:"09.02.11 Разработка и управление ПО",label:"Разработка ПО",code:"09.02.11",budget:25,color:"#4F8EF7"},
     {name:"08.02.01 Строительство и эксплуатация зданий",label:"Строительство",code:"08.02.01",budget:15,color:"#F5A623"},
+  ]},
+  {name:"КИТиС",short:"КИТиС",site:"kitis.ru",vuz:null,
+   specialties:[
+    {name:"09.02.06 Сетевое и системное администрирование",label:"Сетевое",code:"09.02.06",budget:50,color:"#34C98A"},
+    {name:"08.02.01 Строительство и эксплуатация зданий",label:"Строительство",code:"08.02.01",budget:50,color:"#F5A623"},
   ]},
 ];
 let chartInst=null;
@@ -173,16 +173,33 @@ function render(rawH){
       chartDS.push({label:`${col.short}/${spec.label}`,data:allLabels.map(l=>lv[l]??null),borderColor:spec.color,borderWidth:2,pointRadius:4,stepped:'before',fill:false,spanGaps:false});
     });
 
-    const tm={};
-    col.specialties.forEach((_,si)=>{getEntries(h,ci,si).forEach(e=>{if(!tm[e.time])tm[e.time]={};tm[e.time][si]=e;});});
-    const times=Object.keys(tm).sort().reverse();
+    // Группируем по дням — берём последнюю запись каждого дня
+    const dayMap={};
+    col.specialties.forEach((_,si)=>{
+      getEntries(h,ci,si).forEach(e=>{
+        const day=new Date(e.time+(e.time.endsWith('Z')?'':'Z')).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+        if(!dayMap[day])dayMap[day]={};
+        if(!dayMap[day][si]||e.time>dayMap[day][si].time) dayMap[day][si]=e;
+      });
+    });
+    const days=Object.keys(dayMap).sort((a,b)=>{
+      const pa=a.split('.').reverse().join('-');
+      const pb=b.split('.').reverse().join('-');
+      return pb.localeCompare(pa);
+    });
     let rows='';
-    times.forEach(t=>{
-      const cells=col.specialties.map((spec,si)=>{const e=tm[t][si];if(!e)return'<td>—</td>';if(e.error)return'<td class="h-unk">Ошибка</td>';if(e.position===null)return'<td class="h-unk">—</td>';return`<td class="${hc(e.position,spec.budget)}">${e.position}</td>`;}).join('');
-      rows+=`<tr><td class="h-time">${fmtShort(t)}</td>${cells}</tr>`;
+    days.forEach(day=>{
+      const cells=col.specialties.map((spec,si)=>{
+        const e=dayMap[day][si];
+        if(!e)return'<td>—</td>';
+        if(e.error)return'<td class="h-unk">Ошибка</td>';
+        if(e.position===null)return'<td class="h-unk">—</td>';
+        return`<td class="${hc(e.position,spec.budget)}">${e.position}</td>`;
+      }).join('');
+      rows+=`<tr><td class="h-time">${day}</td>${cells}</tr>`;
     });
     const thCells=col.specialties.map(s=>`<th>${s.label}</th>`).join('');
-    const histH=times.length>0?`<div class="hist-scroll"><table><thead><tr><th>Время</th>${thCells}</tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="no-hist">Данных пока нет — появятся после первой успешной проверки</div>`;
+    const histH=days.length>0?`<div class="hist-scroll"><table><thead><tr><th>День</th>${thCells}</tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="no-hist">Данных пока нет — появятся после первой успешной проверки</div>`;
 
     colHtml+=`<div class="college"><div class="college-hdr"><div><div class="college-name">${col.name}</div><div class="college-site">${col.site}</div></div>${vuz}</div><div class="specs-grid">${specsH}</div><div class="hist"><div class="hist-title">История проверок</div>${histH}</div></div>`;
   });
