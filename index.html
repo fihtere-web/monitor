@@ -132,7 +132,14 @@ function render(rawH){
   const h=normalize(rawH);
   const lastEntry=h[h.length-1];
   const lastCheck=lastEntry?fmtTime(lastEntry.time):'—';
-  const allLabels=[...new Set(h.map(e=>e.time.slice(0,16).replace('T',' ')))].sort();
+  // График по дням — последняя позиция каждого дня
+  function getDayKey(iso){
+    const d=new Date(iso+(iso.endsWith('Z')?'':'Z'));
+    return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+  }
+  const allLabels=[...new Set(h.map(e=>getDayKey(e.time)))].sort((a,b)=>{
+    return a.split('.').reverse().join('-').localeCompare(b.split('.').reverse().join('-'));
+  });
   const chartDS=[];
 
   let sumHtml='';
@@ -169,37 +176,29 @@ function render(rawH){
       const tI=total&&!isNaN(total)?parseInt(total):null;
       if(pI&&tI&&tI>0){const b=spec.budget;const pB=(b/tI*100).toFixed(1);const pW=((b+5)/tI*100).toFixed(1);trackH=`<div class="track"><div class="t-ok" style="width:${pB}%"></div><div class="t-warn" style="width:${Math.max(0,pW-pB)}%"></div><div class="t-bad"></div></div><div class="track-lbl"><span>1</span><span>бюджет ${b}</span><span>${tI}</span></div>`;}
       specsH+=`<div class="spec"><div class="spec-tag">${spec.code} ${scoreH}</div><div class="spec-name">${spec.name}</div><div class="pos-row"><div class="pos-num ${nc(pos,spec.budget)}">${pos??'—'}</div>${dh(entries,pos)}<span class="pos-of">из ${total}</span></div><div class="pill ${pc(pos,spec.budget)}">${pt(pos,spec.budget)}</div>${trackH}</div>`;
-      const lv={};entries.forEach(e=>{const v=parseInt(e.position);if(!isNaN(v))lv[e.time.slice(0,16).replace('T',' ')]=v;});
-      chartDS.push({label:`${col.short}/${spec.label}`,data:allLabels.map(l=>lv[l]??null),borderColor:spec.color,borderWidth:2,pointRadius:4,stepped:'before',fill:false,spanGaps:false});
+      // Берём последнюю позицию каждого дня для графика
+      const lv={};
+      entries.forEach(e=>{
+        const day=getDayKey(e.time);
+        const v=parseInt(e.position);
+        if(!isNaN(v)){
+          if(!lv[day]||e.time>lv[day].time) lv[day]={val:v,time:e.time};
+        }
+      });
+      chartDS.push({label:`${col.short}/${spec.label}`,data:allLabels.map(l=>lv[l]?.val??null),borderColor:spec.color,borderWidth:2,pointRadius:5,stepped:'before',fill:false,spanGaps:false});
     });
 
-    // Группируем по дням — берём последнюю запись каждого дня
-    const dayMap={};
-    col.specialties.forEach((_,si)=>{
-      getEntries(h,ci,si).forEach(e=>{
-        const day=new Date(e.time+(e.time.endsWith('Z')?'':'Z')).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-        if(!dayMap[day])dayMap[day]={};
-        if(!dayMap[day][si]||e.time>dayMap[day][si].time) dayMap[day][si]=e;
-      });
-    });
-    const days=Object.keys(dayMap).sort((a,b)=>{
-      const pa=a.split('.').reverse().join('-');
-      const pb=b.split('.').reverse().join('-');
-      return pb.localeCompare(pa);
-    });
+    // История по каждой проверке
+    const tm={};
+    col.specialties.forEach((_,si)=>{getEntries(h,ci,si).forEach(e=>{if(!tm[e.time])tm[e.time]={};tm[e.time][si]=e;});});
+    const times=Object.keys(tm).sort().reverse();
     let rows='';
-    days.forEach(day=>{
-      const cells=col.specialties.map((spec,si)=>{
-        const e=dayMap[day][si];
-        if(!e)return'<td>—</td>';
-        if(e.error)return'<td class="h-unk">Ошибка</td>';
-        if(e.position===null)return'<td class="h-unk">—</td>';
-        return`<td class="${hc(e.position,spec.budget)}">${e.position}</td>`;
-      }).join('');
-      rows+=`<tr><td class="h-time">${day}</td>${cells}</tr>`;
+    times.forEach(t=>{
+      const cells=col.specialties.map((spec,si)=>{const e=tm[t][si];if(!e)return'<td>—</td>';if(e.error)return'<td class="h-unk">Ошибка</td>';if(e.position===null)return'<td class="h-unk">—</td>';return`<td class="${hc(e.position,spec.budget)}">${e.position}</td>`;}).join('');
+      rows+=`<tr><td class="h-time">${fmtShort(t)}</td>${cells}</tr>`;
     });
     const thCells=col.specialties.map(s=>`<th>${s.label}</th>`).join('');
-    const histH=days.length>0?`<div class="hist-scroll"><table><thead><tr><th>День</th>${thCells}</tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="no-hist">Данных пока нет — появятся после первой успешной проверки</div>`;
+    const histH=times.length>0?`<div class="hist-scroll"><table><thead><tr><th>Время</th>${thCells}</tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="no-hist">Данных пока нет — появятся после первой успешной проверки</div>`;
 
     colHtml+=`<div class="college"><div class="college-hdr"><div><div class="college-name">${col.name}</div><div class="college-site">${col.site}</div></div>${vuz}</div><div class="specs-grid">${specsH}</div><div class="hist"><div class="hist-title">История проверок</div>${histH}</div></div>`;
   });
