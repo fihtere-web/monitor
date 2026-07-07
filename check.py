@@ -1,44 +1,105 @@
 #!/usr/bin/env python3
-"""
-Скрипт проверки позиции — запускается GitHub Actions каждые 30 минут.
-Сохраняет результат в data/history.json
-"""
+"""Скрипт проверки позиции — запускается GitHub Actions каждые 30 минут."""
 
 import json, os
 from datetime import datetime
 
 NAME_PART    = "ФИХТЕР"
 HISTORY_FILE = "data/history.json"
-MAX_ENTRIES  = 500
+MAX_ENTRIES  = 1000
 
-SPECIALTIES = [
+# ══════ КОЛЛЕДЖИ И СПЕЦИАЛЬНОСТИ ══════════════════════════════
+# url = None → специальность пропускается (ещё нет списка)
+# Добавьте url когда колледж опубликует список поступающих
+
+COLLEGES = [
     {
-        "name":   "09.02.11 Разработка и управление ПО",
-        "label":  "Разработка ПО",
-        "budget": 20,
-        "color":  "#4F8EF7",
-        "url": (
-            "https://abitur.klgtu.ru/applicants-lists"
-            "?campaign=ce0ebbfe-0296-11f1-af41-4c526250df5c"
-            "&studyForm=1&basis=1"
-            "&specialty=ff73a6f2-01c1-11ed-aeee-4c526250df5c"
-            "&baseEducation=e52ebb96-11dd-11f1-af41-4c526250df5c"
-        ),
+        "name":  "КМРК при КГТУ",
+        "short": "КМРК",
+        "site":  "klgtu.ru",
+        "vuz":   "при КГТУ",
+        "specialties": [
+            {
+                "name":   "09.02.06 Сетевое и системное администрирование",
+                "label":  "Сетевое",
+                "code":   "09.02.06",
+                "budget": 20,
+                "url": (
+                    "https://abitur.klgtu.ru/applicants-lists"
+                    "?campaign=ce0ebbfe-0296-11f1-af41-4c526250df5c"
+                    "&studyForm=1&basis=1"
+                    "&specialty=ff73a6f2-01c1-11ed-aeee-4c526250df5c"
+                    "&baseEducation=e52ebb96-11dd-11f1-af41-4c526250df5c"
+                ),
+            },
+            {
+                "name":   "09.02.11 Разработка и управление ПО",
+                "label":  "Разработка ПО",
+                "code":   "09.02.11",
+                "budget": 20,
+                "url": (
+                    "https://abitur.klgtu.ru/applicants-lists"
+                    "?campaign=ce0ebbfe-0296-11f1-af41-4c526250df5c"
+                    "&studyForm=1&basis=1"
+                    "&baseEducation=e52ebb96-11dd-11f1-af41-4c526250df5c"
+                    "&specialty=386d40d0-0aa3-11f1-af41-4c526250df5c"
+                ),
+            },
+        ],
     },
     {
-        "name":   "09.02.06 Сетевое и системное администрирование",
-        "label":  "Сетевое",
-        "budget": 20,
-        "color":  "#34C98A",
-        "url": (
-            "https://abitur.klgtu.ru/applicants-lists"
-            "?campaign=ce0ebbfe-0296-11f1-af41-4c526250df5c"
-            "&studyForm=1&basis=1"
-            "&baseEducation=e52ebb96-11dd-11f1-af41-4c526250df5c"
-            "&specialty=386d40d0-0aa3-11f1-af41-4c526250df5c"
-        ),
+        "name":  "КИТиС",
+        "short": "КИТиС",
+        "site":  "kitis.ru",
+        "vuz":   None,
+        "specialties": [
+            {
+                "name":   "09.02.06 Сетевое и системное администрирование",
+                "label":  "Сетевое",
+                "code":   "09.02.06",
+                "budget": 50,
+                "url":    None,  # ← добавить ссылку когда опубликуют список
+            },
+            {
+                "name":   "08.02.01 Строительство и эксплуатация зданий",
+                "label":  "Строительство",
+                "code":   "08.02.01",
+                "budget": 50,
+                "url":    None,  # ← добавить ссылку когда опубликуют список
+            },
+        ],
+    },
+    {
+        "name":  "Колледж при БФУ им. И. Канта",
+        "short": "БФУ",
+        "site":  "kantiana.ru",
+        "vuz":   "при БФУ",
+        "specialties": [
+            {
+                "name":   "09.02.11 Разработка и управление ПО",
+                "label":  "Разработка ПО",
+                "code":   "09.02.11",
+                "budget": 25,
+                "url":    None,  # ← добавить ссылку когда опубликуют список
+            },
+            {
+                "name":   "08.02.01 Строительство и эксплуатация зданий",
+                "label":  "Строительство",
+                "code":   "08.02.01",
+                "budget": 15,
+                "url":    None,  # ← добавить ссылку когда опубликуют список
+            },
+        ],
     },
 ]
+# ══════════════════════════════════════════════════════════════
+
+def flat_specialties():
+    result = []
+    for ci, col in enumerate(COLLEGES):
+        for si, spec in enumerate(col["specialties"]):
+            result.append({"college_idx": ci, "spec_idx": si, **spec})
+    return result
 
 def load_history():
     if os.path.exists(HISTORY_FILE):
@@ -61,19 +122,16 @@ def fetch_page(url):
             page.wait_for_selector("table,tbody,[class*='row']", timeout=15000)
         except: pass
         page.wait_for_timeout(3000)
-
         rows = []
         for row in page.query_selector_all("tbody tr"):
             cells = row.query_selector_all("td")
             if cells:
                 rows.append([c.inner_text().strip() for c in cells])
-
         if not rows:
             for row in page.query_selector_all("[class*='row']:not([class*='header'])"):
                 txt = row.inner_text().strip()
                 if txt and any(c.isdigit() for c in txt):
                     rows.append(txt.split("\n"))
-
         full_text = page.inner_text("body")
         browser.close()
         return rows, full_text
@@ -109,21 +167,27 @@ def find_position(rows, full_text, name):
 def main():
     history = load_history()
     now = datetime.utcnow()
-
     print(f"\n[{now.strftime('%d.%m.%Y %H:%M')} UTC] Проверяю...")
 
-    for idx, spec in enumerate(SPECIALTIES):
-        print(f"  → {spec['label']}...", end=" ", flush=True)
+    for fi, spec in enumerate(flat_specialties()):
+        ci, si = spec["college_idx"], spec["spec_idx"]
+        college = COLLEGES[ci]
+        if not spec["url"]:
+            print(f"  → {college['short']} / {spec['label']}: пропуск (нет URL списка)")
+            continue
+
+        print(f"  → {college['short']} / {spec['label']}...", end=" ", flush=True)
         try:
             rows, full_text = fetch_page(spec["url"])
             pos, total, score = find_position(rows, full_text, NAME_PART)
             entry = {
-                "time":     now.isoformat(),
-                "spec_idx": idx,
-                "position": pos,
-                "total":    total,
-                "score":    score,
-                "error":    None,
+                "time":        now.isoformat(),
+                "college_idx": ci,
+                "spec_idx":    si,
+                "position":    pos,
+                "total":       total,
+                "score":       score,
+                "error":       None,
             }
             try:
                 icon = "✅" if int(str(pos).replace("~","")) <= spec["budget"] else "⏳"
@@ -132,12 +196,13 @@ def main():
             print(f"{icon} Позиция: {pos} из {total}")
         except Exception as e:
             entry = {
-                "time":     now.isoformat(),
-                "spec_idx": idx,
-                "position": None,
-                "total":    None,
-                "score":    None,
-                "error":    str(e)[:100],
+                "time":        now.isoformat(),
+                "college_idx": ci,
+                "spec_idx":    si,
+                "position":    None,
+                "total":       None,
+                "score":       None,
+                "error":       str(e)[:100],
             }
             print(f"⚠️  {e}")
 
@@ -145,9 +210,8 @@ def main():
 
     if len(history) > MAX_ENTRIES:
         history = history[-MAX_ENTRIES:]
-
     save_history(history)
-    print(f"  Сохранено в {HISTORY_FILE} ({len(history)} записей)\n")
+    print(f"  Сохранено ({len(history)} записей)\n")
 
 if __name__ == "__main__":
     main()
