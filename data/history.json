@@ -46,5 +46,21 @@
     "total": 164,
     "score": 5.0,
     "error": null
+  },
+  {
+    "time": "2026-07-07T14:39:40.303718",
+    "spec_idx": 0,
+    "position": 10,
+    "total": 84,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-07-07T14:39:40.303718",
+    "spec_idx": 1,
+    "position": 20,
+    "total": 164,
+    "score": 5.0,
+    "error": null
   }
 ]
