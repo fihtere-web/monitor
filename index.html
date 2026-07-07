@@ -96,6 +96,47 @@ const SPECIALTIES = [
 
 let chartInstance = null;
 
+
+async function triggerCheck() {
+  let token = localStorage.getItem('gh_token');
+  if (!token) {
+    token = prompt('Введите GitHub токен (один раз):');
+    if (!token) return;
+    localStorage.setItem('gh_token', token);
+  }
+  const btn = document.getElementById('btn-check');
+  btn.disabled = true;
+  btn.textContent = '⏳ Запускаю...';
+  try {
+    const resp = await fetch(
+      'https://api.github.com/repos/fihtere-web/monitor/actions/workflows/monitor.yml/dispatches',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'token ' + token,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ref: 'main' }),
+      }
+    );
+    if (resp.status === 204) {
+      btn.textContent = '✅ Запущено! (~1 мин)';
+      setTimeout(() => { btn.textContent = '▶ Проверить сейчас'; btn.disabled = false; }, 90000);
+    } else if (resp.status === 401) {
+      localStorage.removeItem('gh_token');
+      btn.textContent = '❌ Токен неверный';
+      setTimeout(() => { btn.textContent = '▶ Проверить сейчас'; btn.disabled = false; }, 3000);
+    } else {
+      btn.textContent = '⚠️ Ошибка ' + resp.status;
+      setTimeout(() => { btn.textContent = '▶ Проверить сейчас'; btn.disabled = false; }, 3000);
+    }
+  } catch(e) {
+    btn.textContent = '❌ Ошибка сети';
+    setTimeout(() => { btn.textContent = '▶ Проверить сейчас'; btn.disabled = false; }, 3000);
+  }
+}
+
 async function loadAndRender() {
   try {
     const resp = await fetch('./data/history.json?t=' + Date.now());
@@ -298,7 +339,7 @@ function render(history) {
     <div class="top-r">
       <div class="badge">🔄 Авто-проверка каждые 30 мин.</div>
       <div>
-        <a class="btn-gh" href="https://github.com/fihtere-web/monitor/actions" target="_blank">▶ Проверить сейчас (GitHub)</a>
+        <button class="btn-gh" onclick="triggerCheck()" id="btn-check">▶ Проверить сейчас</button>
         <div class="time-str">Последняя проверка: ${lastCheck}</div>
       </div>
     </div>
