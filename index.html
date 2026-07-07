@@ -74,6 +74,25 @@ td{padding:4px 16px;border-bottom:1px solid #1A1D27;color:#888}
 canvas{max-height:200px}
 .footer{text-align:center;font-size:11px;color:#333;padding:6px}
 .loading{text-align:center;padding:50px;color:#555}
+
+@media(max-width:600px){
+  body{padding:10px}
+  .topbar{flex-direction:column;align-items:flex-start;gap:8px;padding:10px 14px}
+  .top-r{width:100%;justify-content:space-between}
+  .last-upd{text-align:left;margin-top:2px}
+  .summary{grid-template-columns:repeat(3,minmax(140px,1fr));overflow-x:auto;
+    padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .summary::-webkit-scrollbar{display:none}
+  .sum-card{min-width:140px}
+  .specs-grid{grid-template-columns:1fr}
+  .spec{border-right:none;border-bottom:1px solid #2A2D3A;padding:10px 14px}
+  .spec:last-child{border-bottom:none}
+  .no-data{border-right:none;border-bottom:1px solid #2A2D3A}
+  .no-data:last-child{border-bottom:none}
+  .pos-num{font-size:2rem}
+  th,td{padding:4px 12px}
+  .college-hdr{flex-wrap:wrap;gap:4px}
+}
 </style>
 </head>
 <body>
