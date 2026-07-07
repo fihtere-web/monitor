@@ -97,6 +97,16 @@ const SPECIALTIES = [
 let chartInstance = null;
 
 
+
+function fmtTime(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr + (isoStr.endsWith('Z') ? '' : 'Z'));
+  return d.toLocaleString('ru-RU', {
+    day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+}
+
 async function triggerCheck() {
   let token = localStorage.getItem('gh_token');
   if (!token) {
@@ -170,7 +180,7 @@ function render(history) {
     const total   = last?.total ?? '?';
     const score   = last?.score ?? null;
     const err     = last?.error ?? null;
-    const ts      = last ? last.time.slice(0,16).replace('T',' ') : '—';
+    const ts      = last ? fmtTime(last.time) : '—';
 
     // Статус
     let sIcon, sTxt, cardCls, stCls, posDisplay;
@@ -202,7 +212,7 @@ function render(history) {
     // История
     let histRows = '';
     [...entries].reverse().slice(0,15).forEach(e => {
-      const eTs  = e.time.slice(0,16).replace('T',' ');
+      const eTs  = fmtTime(e.time);
       const ePos = e.position ?? '—';
       const eTot = e.total ?? '—';
       let rCls = 'r-unk', pStr = String(ePos);
