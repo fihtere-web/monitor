@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мониторинг — Фихтер Андрей</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+     background:#0F1117;color:#E8EAED;min-height:100vh;padding:16px}
+.topbar{display:flex;justify-content:space-between;align-items:center;
+        background:#1A1D27;border-radius:14px;padding:14px 22px;
+        margin-bottom:16px;border:1px solid #2A2D3A;flex-wrap:wrap;gap:10px}
+.ttl{font-size:1.1rem;font-weight:700;color:#fff}.ttl span{color:#4F8EF7}
+.sub{font-size:.75rem;color:#666;margin-top:2px}
+.top-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{background:#1E3A2E;color:#34C98A;border:1px solid #34C98A44;
+       padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600}
+.time-str{font-size:.72rem;color:#555;text-align:right;margin-top:3px}
+.btn-gh{background:#2A2D3A;color:#aaa;border:1px solid #3A3D4A;
+        padding:7px 14px;border-radius:10px;font-size:.8rem;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-gh:hover{background:#3A3D4A;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-bottom:16px}
+.card{background:#1A1D27;border-radius:14px;border:1px solid #2A2D3A;overflow:hidden}
+.card-ok{border-color:#34C98A55}.card-warn{border-color:#F5A62355}
+.card-bad{border-color:#F5504455}.card-unk{border-color:#3A3D4A}
+.card-hdr{padding:14px 18px 10px;background:#12151F}
+.card-title{font-size:.92rem;font-weight:700;color:#fff}
+.card-meta{font-size:.7rem;color:#555;margin-top:2px}
+.card-body{padding:14px 18px}
+.pos-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.pos-num{font-size:3.2rem;font-weight:800;color:#fff;line-height:1}
+.delta{font-size:.95rem;font-weight:700;padding:2px 7px;border-radius:7px}
+.delta-ok{color:#34C98A;background:#34C98A18}
+.delta-bad{color:#F55044;background:#F5504418}
+.delta-eq{color:#888;background:#88888814}
+.pos-of{font-size:.9rem;color:#555}
+.score-badge{margin-left:auto;background:#4F8EF718;color:#4F8EF7;
+             border:1px solid #4F8EF733;padding:3px 10px;border-radius:18px;font-size:.78rem;font-weight:700}
+.status-row{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:9px;margin-bottom:6px}
+.st-ok{background:#34C98A15;color:#34C98A}
+.st-warn{background:#F5A62315;color:#F5A623}
+.st-bad{background:#F5504415;color:#F55044}
+.st-unk{background:#88888812;color:#777}
+.status-txt{font-size:.82rem;font-weight:600}
+.upd-time{font-size:.7rem;color:#444}
+.hist-wrap{border-top:1px solid #2A2D3A;padding:12px 18px}
+.hist-title{font-size:.68rem;font-weight:700;color:#444;
+            text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.hist-tbl{width:100%;border-collapse:collapse;font-size:.76rem}
+.hist-tbl th{color:#444;padding:3px 6px;text-align:left;border-bottom:1px solid #2A2D3A}
+.hist-tbl td{padding:4px 6px;border-bottom:1px solid #1E2130}
+.r-ok td:nth-child(2){color:#34C98A}.r-warn td:nth-child(2){color:#F5A623}
+.r-bad td:nth-child(2){color:#F55044}.r-err td,.r-unk td{color:#444}
+.trackers{display:grid;gap:12px;margin-bottom:16px}
+.tracker{background:#1A1D27;border-radius:14px;border:1px solid #2A2D3A;padding:18px 22px}
+.tr-head{display:flex;justify-content:space-between;align-items:center;
+         flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tr-name{font-size:.9rem;font-weight:700;color:#fff}
+.tr-moves{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.mini-dot{padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:700;color:#fff}
+.mini-arr{font-size:.75rem;font-weight:700;padding:0 2px}
+.tr-bar-wrap{position:relative;margin-bottom:32px}
+.tr-bar{display:flex;height:22px;border-radius:6px;overflow:hidden}
+.tr-zone-ok{background:#34C98A30}
+.tr-zone-warn{background:#F5A62330}
+.tr-zone-bad{background:#F5504420;flex:1}
+.tr-pin{position:absolute;top:-2px;transform:translateX(-50%);text-align:center;z-index:2}
+.tr-label{display:inline-block;padding:2px 8px;border-radius:8px;
+          font-size:.78rem;font-weight:800;white-space:nowrap;margin-bottom:2px;color:#fff}
+.tr-needle{width:2px;height:30px;margin:0 auto}
+.tr-budget-mark{position:absolute;top:0;transform:translateX(-50%);z-index:1}
+.tr-bm-line{width:2px;height:22px;background:#ffffff25;margin:0 auto}
+.tr-bm-label{font-size:.65rem;color:#555;text-align:center;margin-top:3px;white-space:nowrap;line-height:1.3}
+.tr-legend{display:flex;gap:14px;flex-wrap:wrap}
+.leg{font-size:.72rem}.leg-ok{color:#34C98A}.leg-warn{color:#F5A623}
+.leg-bad{color:#F55044}.leg-total{color:#555;margin-left:auto}
+.chart-wrap{background:#1A1D27;border-radius:14px;border:1px solid #2A2D3A;padding:18px;margin-bottom:14px}
+.chart-title{font-size:.88rem;font-weight:700;color:#fff;margin-bottom:14px}
+.chart-hint{color:#555;font-size:.82rem;padding:30px 0;text-align:center}
+canvas{max-height:220px}
+.loading{text-align:center;padding:60px;color:#555;font-size:.9rem}
+.footer{text-align:center;font-size:.7rem;color:#333;padding:8px}
+</style>
+</head>
+<body>
+
+<div id="app"><div class="loading">⏳ Загружаем данные...</div></div>
+
+<script>
+const SPECIALTIES = [
+  { name:"09.02.11 Разработка и управление ПО", label:"Разработка ПО", budget:20, color:"#4F8EF7" },
+  { name:"09.02.06 Сетевое и системное администрирование", label:"Сетевое", budget:20, color:"#34C98A" },
+];
+
+let chartInstance = null;
+
+async function loadAndRender() {
+  try {
+    const resp = await fetch('./data/history.json?t=' + Date.now());
+    const history = await resp.json();
+    render(history);
+  } catch(e) {
+    document.getElementById('app').innerHTML =
+      '<div class="loading">⚠️ Не удалось загрузить данные. Обновите страницу.</div>';
+  }
+}
+
+function render(history) {
+  // Собираем последние данные
+  const now = new Date().toLocaleString('ru-RU');
+
+  // Последнее время проверки из данных
+  const lastEntry = history[history.length - 1];
+  const lastCheck = lastEntry
+    ? new Date(lastEntry.time).toLocaleString('ru-RU')
+    : '—';
+
+  let cardsHtml = '';
+  let trackersHtml = '';
+  const allLabels = [...new Set(history.map(e => e.time.slice(0,16).replace('T',' ')))].sort();
+  const chartDatasets = [];
+
+  SPECIALTIES.forEach((spec, idx) => {
+    const entries = history.filter(e => e.spec_idx === idx);
+    const last    = entries[entries.length - 1] || null;
+    const pos     = last?.position ?? null;
+    const total   = last?.total ?? '?';
+    const score   = last?.score ?? null;
+    const err     = last?.error ?? null;
+    const ts      = last ? last.time.slice(0,16).replace('T',' ') : '—';
+
+    // Статус
+    let sIcon, sTxt, cardCls, stCls, posDisplay;
+    if (err) {
+      sIcon='⚠️'; sTxt='Ошибка загрузки'; cardCls='card-unk'; stCls='st-unk'; posDisplay='—';
+    } else if (pos === null) {
+      sIcon='🔍'; sTxt='Не найден в списке'; cardCls='card-unk'; stCls='st-unk'; posDisplay='—';
+    } else {
+      const p = parseInt(pos), b = spec.budget;
+      posDisplay = String(pos);
+      if (p <= b)       { sIcon='✅'; sTxt=`В ЗОНЕ ЗАЧИСЛЕНИЯ — место ${p} из ${b} бюджетных`; cardCls='card-ok'; stCls='st-ok'; }
+      else if (p<=b+5)  { sIcon='⚡'; sTxt=`Пограничная зона — ${p-b} до бюджета`;             cardCls='card-warn'; stCls='st-warn'; }
+      else              { sIcon='⏳'; sTxt=`Вне зоны — ${p-b} мест до бюджета`;                 cardCls='card-bad'; stCls='st-bad'; }
+    }
+
+    // Динамика
+    let deltaHtml = '';
+    if (entries.length >= 2 && pos !== null && entries[entries.length-2].position !== null) {
+      const prev = parseInt(entries[entries.length-2].position);
+      const curr = parseInt(pos);
+      const d = prev - curr;
+      if (d > 0)      deltaHtml = `<span class="delta delta-ok">▼${d}</span>`;
+      else if (d < 0) deltaHtml = `<span class="delta delta-bad">▲${Math.abs(d)}</span>`;
+      else            deltaHtml = `<span class="delta delta-eq">=</span>`;
+    }
+
+    const scoreHtml = score ? `<div class="score-badge">Балл: ${score.toFixed(2)}</div>` : '';
+
+    // История
+    let histRows = '';
+    [...entries].reverse().slice(0,15).forEach(e => {
+      const eTs  = e.time.slice(0,16).replace('T',' ');
+      const ePos = e.position ?? '—';
+      const eTot = e.total ?? '—';
+      let rCls = 'r-unk', pStr = String(ePos);
+      if (e.error)          { rCls='r-err'; pStr='Ошибка'; }
+      else if (e.position===null) { rCls='r-unk'; pStr='—'; }
+      else {
+        const p = parseInt(e.position), b = spec.budget;
+        rCls = p<=b ? 'r-ok' : (p<=b+5 ? 'r-warn' : 'r-bad');
+      }
+      histRows += `<tr class="${rCls}"><td>${eTs}</td><td><b>${pStr}</b></td><td>${eTot}</td></tr>`;
+    });
+
+    cardsHtml += `
+    <div class="card ${cardCls}">
+      <div class="card-hdr" style="border-left:5px solid ${spec.color}">
+        <div class="card-title">${spec.name}</div>
+        <div class="card-meta">КМРК КГТУ · Бюджет: ${spec.budget} мест · Очная · 9 кл.</div>
+      </div>
+      <div class="card-body">
+        <div class="pos-row">
+          <div class="pos-num">${posDisplay}</div>${deltaHtml}
+          <div class="pos-of">из ${total}</div>${scoreHtml}
+        </div>
+        <div class="status-row ${stCls}">
+          <span>${sIcon}</span><span class="status-txt">${sTxt}</span>
+        </div>
+        <div class="upd-time">Обновлено: ${ts}</div>
+      </div>
+      <div class="hist-wrap">
+        <div class="hist-title">История проверок</div>
+        <table class="hist-tbl">
+          <thead><tr><th>Время</th><th>Позиция</th><th>Всего</th></tr></thead>
+          <tbody>${histRows || '<tr><td colspan="3" style="color:#555">Нет данных</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+    // Трекер-шкала
+    const pInt = pos ? parseInt(pos) : null;
+    const tInt = total && !isNaN(total) ? parseInt(total) : null;
+    if (pInt && tInt && tInt > 0) {
+      const b = spec.budget;
+      const pctBudget = (b/tInt*100).toFixed(1);
+      const pctWarn   = ((b+5)/tInt*100).toFixed(1);
+      const pinLeft   = Math.min(Math.max((pInt/tInt*100).toFixed(1), 2), 97);
+      const pinColor  = pInt<=b ? '#34C98A' : (pInt<=b+5 ? '#F5A623' : '#F55044');
+      const gap       = pInt - b;
+      const gapStr    = gap > 0
+        ? `<span style="color:#F55044">+${gap} до бюджета</span>`
+        : `<span style="color:#34C98A">запас ${Math.abs(gap)} мест</span>`;
+
+      // Мини-история
+      const posVals = entries.slice(-10).reduce((acc, e) => {
+        const v = parseInt(e.position);
+        if (!isNaN(v)) acc.push(v);
+        return acc;
+      }, []);
+      let miniHtml = '';
+      posVals.forEach((v, i) => {
+        const col = v<=b ? '#34C98A' : (v<=b+5 ? '#F5A623' : '#F55044');
+        miniHtml += `<span class="mini-dot" style="background:${col}">${v}</span>`;
+        if (i < posVals.length-1) {
+          const diff = posVals[i] - posVals[i+1];
+          const ac = diff > 0 ? '#34C98A' : (diff < 0 ? '#F55044' : '#666');
+          const ar = diff > 0 ? `▼${diff}` : (diff < 0 ? `▲${Math.abs(diff)}` : '=');
+          miniHtml += `<span class="mini-arr" style="color:${ac}">${ar}</span>`;
+        }
+      });
+
+      trackersHtml += `
+      <div class="tracker">
+        <div class="tr-head">
+          <div><span class="tr-name">${spec.name}</span> &nbsp; ${gapStr}</div>
+          <div class="tr-moves">${miniHtml || '<span style="color:#444">Одна проверка — динамики нет</span>'}</div>
+        </div>
+        <div class="tr-bar-wrap">
+          <div class="tr-bar">
+            <div class="tr-zone-ok" style="width:${pctBudget}%"></div>
+            <div class="tr-zone-warn" style="width:${pctWarn-pctBudget}%"></div>
+            <div class="tr-zone-bad"></div>
+          </div>
+          <div class="tr-pin" style="left:${pinLeft}%">
+            <div class="tr-label" style="background:${pinColor}">${pInt}</div>
+            <div class="tr-needle" style="background:${pinColor}"></div>
+          </div>
+          <div class="tr-budget-mark" style="left:${pctBudget}%">
+            <div class="tr-bm-line"></div>
+            <div class="tr-bm-label">бюджет<br>${b}</div>
+          </div>
+        </div>
+        <div class="tr-legend">
+          <span class="leg leg-ok">■ Бюджет (1–${b})</span>
+          <span class="leg leg-warn">■ Пограничная (${b+1}–${b+5})</span>
+          <span class="leg leg-bad">■ Вне зоны</span>
+          <span class="leg leg-total">Всего: ${tInt}</span>
+        </div>
+      </div>`;
+    }
+
+    // Данные для графика
+    const lblToVal = {};
+    entries.forEach(e => {
+      const lbl = e.time.slice(0,16).replace('T',' ');
+      const v = parseInt(e.position);
+      if (!isNaN(v)) lblToVal[lbl] = v;
+    });
+    chartDatasets.push({
+      label: spec.label,
+      data: allLabels.map(l => lblToVal[l] ?? null),
+      borderColor: spec.color,
+      backgroundColor: spec.color + '22',
+      borderWidth: 2.5,
+      pointRadius: 5,
+      stepped: 'before',
+      fill: false,
+      spanGaps: false,
+    });
+  });
+
+  const numPoints = Math.max(...SPECIALTIES.map((_,i) =>
+    history.filter(e=>e.spec_idx===i).length
+  ), 0);
+  const chartHint = numPoints < 3
+    ? `<div class="chart-hint">График появится после 3 проверок (сейчас ${numPoints})</div>`
+    : '';
+  const chartDisplay = numPoints >= 3 ? 'block' : 'none';
+
+  document.getElementById('app').innerHTML = `
+  <div class="topbar">
+    <div>
+      <div class="ttl">📊 Мониторинг — <span>Фихтер Андрей</span></div>
+      <div class="sub">КМРК при КГТУ · СПО · Бюджет · Очная · 9 классов</div>
+    </div>
+    <div class="top-r">
+      <div class="badge">🔄 Авто-проверка каждые 30 мин.</div>
+      <div>
+        <a class="btn-gh" href="https://github.com/fihtere-web/monitor/actions" target="_blank">▶ Проверить сейчас (GitHub)</a>
+        <div class="time-str">Последняя проверка: ${lastCheck}</div>
+      </div>
+    </div>
+  </div>
+  <div class="cards">${cardsHtml}</div>
+  <div class="trackers">
+    <div class="tracker" style="padding:12px 22px 6px">
+      <div class="tr-name">📍 Позиция в рейтинге — наглядная шкала</div>
+    </div>
+    ${trackersHtml}
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-title">📈 Динамика позиции (история проверок)</div>
+    ${chartHint}
+    <div style="display:${chartDisplay}"><canvas id="chart"></canvas></div>
+  </div>
+  <div class="footer">
+    Данные с <a href="https://abitur.klgtu.ru" target="_blank" style="color:#4F8EF7">abitur.klgtu.ru</a>
+    &nbsp;·&nbsp; Страница обновляется каждые 5 мин. &nbsp;·&nbsp; ${now}
+  </div>`;
+
+  // График
+  if (numPoints >= 3) {
+    const ctx = document.getElementById('chart');
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx.getContext('2d'), {
+      type: 'line',
+      data: { labels: allLabels, datasets: chartDatasets },
+      options: {
+        responsive: true,
+        scales: {
+          y: { reverse:true, grid:{color:'#2A2D3A'}, ticks:{color:'#666'},
+               title:{display:true, text:'Позиция (↓ меньше = лучше)', color:'#555'} },
+          x: { grid:{color:'#2A2D3A'}, ticks:{color:'#666', maxTicksLimit:10, maxRotation:30} }
+        },
+        plugins: { legend:{ labels:{color:'#aaa'} } }
+      }
+    });
+  }
+}
+
+// Загрузка и авто-обновление каждые 5 минут
+loadAndRender();
+setInterval(loadAndRender, 5 * 60 * 1000);
+</script>
+</body>
+</html>
