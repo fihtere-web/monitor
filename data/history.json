@@ -188,5 +188,23 @@
     "total": 169,
     "score": 5.0,
     "error": null
+  },
+  {
+    "time": "2026-07-08T13:44:55.105692",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": 12,
+    "total": 95,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-07-08T13:44:55.105692",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": 21,
+    "total": 180,
+    "score": 5.0,
+    "error": null
   }
 ]
