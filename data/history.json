@@ -296,5 +296,23 @@
     "total": 180,
     "score": 5.0,
     "error": null
+  },
+  {
+    "time": "2026-07-09T14:55:52.593966",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": null,
+    "total": null,
+    "score": null,
+    "error": "Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://abitur.klgtu.ru/applicants"
+  },
+  {
+    "time": "2026-07-09T14:55:52.593966",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": null,
+    "total": null,
+    "score": null,
+    "error": "Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://abitur.klgtu.ru/applicants"
   }
 ]
