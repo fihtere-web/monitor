@@ -890,5 +890,23 @@
     "total": null,
     "score": null,
     "error": "Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://abitur.klgtu.ru/applicants"
+  },
+  {
+    "time": "2026-07-15T07:44:14.889019",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": 16,
+    "total": 129,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-07-15T07:44:14.889019",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": 22,
+    "total": 247,
+    "score": 5.0,
+    "error": null
   }
 ]
