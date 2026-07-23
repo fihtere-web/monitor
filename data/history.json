@@ -1538,5 +1538,23 @@
     "total": 316,
     "score": 5.0,
     "error": null
+  },
+  {
+    "time": "2026-07-23T00:12:21.715092",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": 21,
+    "total": 155,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-07-23T00:12:21.715092",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": 34,
+    "total": 316,
+    "score": 5.0,
+    "error": null
   }
 ]
