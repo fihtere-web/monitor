@@ -1970,5 +1970,23 @@
     "total": 351,
     "score": 5.0,
     "error": null
+  },
+  {
+    "time": "2026-07-29T00:12:56.934865",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": 23,
+    "total": 167,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-07-29T00:12:56.934865",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": 35,
+    "total": 351,
+    "score": 5.0,
+    "error": null
   }
 ]
