@@ -4418,5 +4418,23 @@
     "total": 382,
     "score": 5.0,
     "error": null
+  },
+  {
+    "time": "2026-08-12T12:26:05.203385",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": 27,
+    "total": 183,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-08-12T12:26:05.203385",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": 37,
+    "total": 382,
+    "score": 5.0,
+    "error": null
   }
 ]
