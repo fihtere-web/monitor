@@ -1,23 +1,5 @@
 [
   {
-    "time": "2026-07-08T20:42:30.358652",
-    "college_idx": 0,
-    "spec_idx": 0,
-    "position": null,
-    "total": null,
-    "score": null,
-    "error": "Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://abitur.klgtu.ru/applicants"
-  },
-  {
-    "time": "2026-07-08T20:42:30.358652",
-    "college_idx": 0,
-    "spec_idx": 1,
-    "position": null,
-    "total": null,
-    "score": null,
-    "error": "Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://abitur.klgtu.ru/applicants"
-  },
-  {
     "time": "2026-07-09T08:57:02.248228",
     "college_idx": 0,
     "spec_idx": 0,
@@ -8992,6 +8974,24 @@
   },
   {
     "time": "2026-08-23T08:37:47.791421",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": 30,
+    "total": 378,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-08-23T09:34:12.297018",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": 25,
+    "total": 177,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-08-23T09:34:12.297018",
     "college_idx": 0,
     "spec_idx": 1,
     "position": 30,
