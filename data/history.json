@@ -1,23 +1,5 @@
 [
   {
-    "time": "2026-08-17T20:33:31.662585",
-    "college_idx": 0,
-    "spec_idx": 0,
-    "position": 27,
-    "total": 177,
-    "score": 5.0,
-    "error": null
-  },
-  {
-    "time": "2026-08-17T20:33:31.662585",
-    "college_idx": 0,
-    "spec_idx": 1,
-    "position": 30,
-    "total": 378,
-    "score": 5.0,
-    "error": null
-  },
-  {
     "time": "2026-08-17T22:32:08.231576",
     "college_idx": 0,
     "spec_idx": 0,
@@ -8992,6 +8974,24 @@
   },
   {
     "time": "2026-10-17T01:12:59.837166",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": 30,
+    "total": 378,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-10-17T06:01:11.544553",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": 25,
+    "total": 177,
+    "score": 5.0,
+    "error": null
+  },
+  {
+    "time": "2026-10-17T06:01:11.544553",
     "college_idx": 0,
     "spec_idx": 1,
     "position": 30,
