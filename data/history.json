@@ -1,23 +1,5 @@
 [
   {
-    "time": "2026-08-24T07:39:48.384031",
-    "college_idx": 0,
-    "spec_idx": 0,
-    "position": 25,
-    "total": 177,
-    "score": 5.0,
-    "error": null
-  },
-  {
-    "time": "2026-08-24T07:39:48.384031",
-    "college_idx": 0,
-    "spec_idx": 1,
-    "position": 30,
-    "total": 378,
-    "score": 5.0,
-    "error": null
-  },
-  {
     "time": "2026-08-24T08:56:16.446584",
     "college_idx": 0,
     "spec_idx": 0,
@@ -8992,6 +8974,24 @@
   },
   {
     "time": "2026-11-26T00:10:14.835557",
+    "college_idx": 0,
+    "spec_idx": 1,
+    "position": null,
+    "total": null,
+    "score": null,
+    "error": "Page.goto: net::ERR_CERT_COMMON_NAME_INVALID at https://abitur.klgtu.ru/applicants-lists?campaign=ce"
+  },
+  {
+    "time": "2026-11-26T08:48:01.407948",
+    "college_idx": 0,
+    "spec_idx": 0,
+    "position": null,
+    "total": null,
+    "score": null,
+    "error": "Page.goto: net::ERR_CERT_COMMON_NAME_INVALID at https://abitur.klgtu.ru/applicants-lists?campaign=ce"
+  },
+  {
+    "time": "2026-11-26T08:48:01.407948",
     "college_idx": 0,
     "spec_idx": 1,
     "position": null,
